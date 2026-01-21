@@ -1,5 +1,5 @@
 import datetime
-from uuid import uuid4
+from uuid import uuid4, UUID
 
 from .task_status import Priority, TaskStatus
 
@@ -13,7 +13,7 @@ class Task:
         priority: Priority = Priority.LOW,
         deadline: datetime.datetime | None = None,
     ):
-        self.id = str(uuid4())
+        self.id: UUID = uuid4()
         self.title = title
         self.description = description
         self.status = TaskStatus.NEW
@@ -46,4 +46,3 @@ class Task:
 
     def __repr__(self) -> str:
         return f"Task(title='{self.title}', status={self.status.value})"
-

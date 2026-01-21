@@ -1,0 +1,6 @@
+# Linter and formatter (all-in-one, fast)
+ruff>=0.1.0
+
+# Type checking
+mypy>=1.7.0
+

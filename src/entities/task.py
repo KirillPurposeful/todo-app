@@ -1,5 +1,5 @@
 import datetime
-from uuid import uuid4, UUID
+from uuid import UUID, uuid4
 
 from .task_status import Priority, TaskStatus
 

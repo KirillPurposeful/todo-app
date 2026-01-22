@@ -1,5 +1,5 @@
-from uuid import UUID
 from copy import deepcopy
+from uuid import UUID
 
 from src.entities.task import Task
 from src.repositories.base import BaseRepository

@@ -1,6 +1,7 @@
 import datetime
 from uuid import UUID, uuid4
 
+from ..exceptions import ValidationError
 from .task_status import Priority, TaskStatus
 
 
@@ -22,9 +23,31 @@ class Task:
         self.created_at = datetime.datetime.now()
         self.updated_at = datetime.datetime.now()
 
+    def update(
+        self,
+        title: str | None = None,
+        description: str | None = None,
+        priority: Priority | None = None,
+        deadline: datetime.datetime | None = None,
+    ) -> None:
+        updates = {
+            "title": title,
+            "description": description,
+            "priority": priority,
+            "deadline": deadline,
+        }
+        for field, value in updates.items():
+            if value is not None:
+                setattr(self, field, value)
+        self.updated_at = datetime.datetime.now()
+
+    def set_priority(self, priority: Priority) -> None:
+        self.priority = priority
+        self.updated_at = datetime.datetime.now()
+
     def mark_in_progress(self) -> None:
         if self.status == TaskStatus.COMPLETED:
-            raise ValueError("Cannot restart completed task")
+            raise ValidationError("Cannot restart completed task")
         if self.status == TaskStatus.IN_PROGRESS:
             return
         self.status = TaskStatus.IN_PROGRESS
@@ -32,16 +55,8 @@ class Task:
 
     def mark_completed(self) -> None:
         if self.status == TaskStatus.COMPLETED:
-            raise ValueError("Task already completed")
+            raise ValidationError("Task already completed")
         self.status = TaskStatus.COMPLETED
-        self.updated_at = datetime.datetime.now()
-
-    def set_priority(self, priority: Priority) -> None:
-        self.priority = priority
-        self.updated_at = datetime.datetime.now()
-
-    def update_deadline(self, deadline: datetime.datetime) -> None:
-        self.deadline = deadline
         self.updated_at = datetime.datetime.now()
 
     def __repr__(self) -> str:

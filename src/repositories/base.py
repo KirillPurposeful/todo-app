@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
 from uuid import UUID
 
+from src.entities.task_status import TaskStatus
+
 T = TypeVar("T")
 
 
@@ -20,4 +22,8 @@ class BaseRepository(ABC, Generic[T]):
 
     @abstractmethod
     def get_all(self) -> list[T]:
+        pass
+
+    @abstractmethod
+    def get_by_status(self, status: TaskStatus) -> list[T]:
         pass

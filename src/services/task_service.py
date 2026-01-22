@@ -3,6 +3,7 @@ from uuid import UUID
 
 from src.entities.task import Task
 from src.entities.task_status import Priority, TaskStatus
+from src.exceptions import TaskNotFoundError, ValidationError
 from src.repositories.base import BaseRepository
 
 
@@ -18,10 +19,10 @@ class TaskService:
         deadline: datetime.datetime | None = None,
     ) -> Task:
         if not title or not title.strip():
-            raise ValueError("Title is required")
+            raise ValidationError("Title is required")
 
         if deadline is not None and deadline < datetime.datetime.now():
-            raise ValueError("Deadline cannot be in the past")
+            raise ValidationError("Deadline cannot be in the past")
 
         task = Task(
             title=title.strip(),
@@ -36,7 +37,7 @@ class TaskService:
     def get_task_by_id(self, task_id: UUID) -> Task:
         task = self._repository.get_by_id(task_id)
         if task is None:
-            raise ValueError(f"Task with id {task_id} not found")
+            raise TaskNotFoundError(f"Task with id {task_id} not found")
         return task
 
     def get_all_tasks(self) -> list[Task]:
@@ -47,40 +48,45 @@ class TaskService:
         task_id: UUID,
         title: str | None = None,
         description: str | None = None,
+        priority: Priority | None = None,
+        deadline: datetime.datetime | None = None,
     ) -> Task:
         task = self.get_task_by_id(task_id)
 
-        if title is not None:
-            if not title.strip():
-                raise ValueError("Title cannot be empty")
-            task.title = title.strip()
+        if title is not None and not title.strip():
+            raise ValidationError("Title cannot be empty")
 
-        if description is not None:
-            task.description = description
+        if deadline is not None and deadline < datetime.datetime.now():
+            raise ValidationError("Deadline cannot be in the past")
 
-        task.updated_at = datetime.datetime.now()
+        task.update(
+            title=title.strip() if title else None,
+            description=description,
+            priority=priority,
+            deadline=deadline,
+        )
+
         self._repository.save(task)
         return task
 
     def change_task_status(self, task_id: UUID, status: TaskStatus) -> Task:
         task = self.get_task_by_id(task_id)
 
-        if status == TaskStatus.IN_PROGRESS:
+        if status == TaskStatus.NEW:
+            task.status = TaskStatus.NEW
+            task.updated_at = datetime.datetime.now()
+        elif status == TaskStatus.IN_PROGRESS:
             task.mark_in_progress()
         elif status == TaskStatus.COMPLETED:
             task.mark_completed()
-        else:
-            raise ValueError(f"Unsupported status: {status}")
 
         self._repository.save(task)
         return task
 
-    def delete_task(self, task_id: UUID) -> bool:
+    def delete_task(self, task_id: UUID) -> None:
         deleted = self._repository.delete(task_id)
         if not deleted:
-            raise ValueError(f"Task with id {task_id} not found")
-        return True
+            raise TaskNotFoundError(f"Task with id {task_id} not found")
 
     def get_tasks_by_status(self, status: TaskStatus) -> list[Task]:
-        tasks = self._repository.get_all()
-        return [task for task in tasks if task.status == status]
+        return self._repository.get_by_status(status)

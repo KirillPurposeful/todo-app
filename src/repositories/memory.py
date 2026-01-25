@@ -24,8 +24,4 @@ class InMemoryTaskRepository(BaseRepository[Task]):
         return [deepcopy(task) for task in self._storage.values() if task.status == status]
 
     def delete(self, id: UUID) -> bool:
-        if id in self._storage:
-            del self._storage[id]
-            return True
-        return False
-
+        return self._storage.pop(id, None) is not None

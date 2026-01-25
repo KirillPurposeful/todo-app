@@ -1,4 +1,3 @@
-from copy import deepcopy
 from uuid import UUID
 
 from src.entities.task import Task
@@ -14,14 +13,14 @@ class InMemoryTaskRepository(BaseRepository[Task]):
         self._storage[entity.id] = entity
         return entity
 
-    def get_by_id(self, id: UUID) -> Task | None:
-        return deepcopy(self._storage.get(id))
+    def get_by_id(self, entity_id: UUID) -> Task | None:
+        return self._storage.get(entity_id)
 
     def get_all(self) -> list[Task]:
-        return [deepcopy(task) for task in self._storage.values()]
+        return list(self._storage.values())
 
     def get_by_status(self, status: TaskStatus) -> list[Task]:
-        return [deepcopy(task) for task in self._storage.values() if task.status == status]
+        return [task for task in self._storage.values() if task.status == status]
 
-    def delete(self, id: UUID) -> bool:
-        return self._storage.pop(id, None) is not None
+    def delete(self, entity_id: UUID) -> bool:
+        return self._storage.pop(entity_id, None) is not None

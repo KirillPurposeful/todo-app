@@ -1,9 +1,13 @@
 import datetime
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from uuid import UUID, uuid4
 
 from ..exceptions import ValidationError
 from .task_status import Priority, TaskStatus
+
+# todo: создать таск валидатор для соблюдения SRP
+# todo: разделить модель домена и модель db ORM надо было бы сделать в норм проекте
+#   для разделения логики и данных
 
 
 @dataclass
@@ -18,21 +22,20 @@ class Task:
     id: UUID = field(default_factory=uuid4)
 
     def __post_init__(self) -> None:
-        self.__validate_title(self.title)
-        self.__validate_deadline(self.deadline)
+        self._validate_title(self.title)
+        self._validate_deadline(self.deadline)
 
     @staticmethod
-    def __validate_title(title: str) -> None:
+    def _validate_title(title: str) -> None:
         if not title or not title.strip():
             raise ValidationError("Title is required")
 
     @staticmethod
-    def __validate_deadline(deadline: datetime.datetime | None) -> None:
+    def _validate_deadline(deadline: datetime.datetime | None) -> None:
         if deadline is not None and deadline < datetime.datetime.now():
             raise ValidationError("Deadline cannot be in the past")
 
     def _touch(self) -> None:
-        """Update the updated_at timestamp."""
         self.updated_at = datetime.datetime.now()
 
     def update(
@@ -43,7 +46,7 @@ class Task:
         deadline: datetime.datetime | None = None,
     ) -> None:
         if title is not None:
-            self.__validate_title(title)
+            self._validate_title(title)
             self.title = title
 
         if description is not None:
@@ -53,13 +56,12 @@ class Task:
             self.priority = priority
 
         if deadline is not None:
-            self.__validate_deadline(deadline)
+            self._validate_deadline(deadline)
             self.deadline = deadline
 
         self._touch()
 
     def _set_status(self, new_status: TaskStatus) -> None:
-        """Change task status with validation."""
         if self.status == new_status:
             return
 
@@ -80,3 +82,6 @@ class Task:
 
     def __repr__(self) -> str:
         return f"Task(title='{self.title}', status={self.status.value})"
+
+    def to_dict(self) -> dict:
+        return asdict(self)

@@ -1,12 +1,10 @@
-class DomainError(Exception):
-    """Base domain exception."""
-
+class DomainException(Exception):
     pass
 
 
-class ValidationError(DomainError):
+class ValidationError(DomainException):
     pass
 
 
-class TaskNotFoundError(DomainError):
+class TaskNotFoundError(DomainException):
     pass

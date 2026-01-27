@@ -1,13 +1,13 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class TaskStatus(str, Enum):
+class TaskStatus(StrEnum):
     NEW = "new"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
 
 
-class Priority(str, Enum):
+class Priority(StrEnum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"

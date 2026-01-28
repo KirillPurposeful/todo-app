@@ -1,11 +1,11 @@
 [project]
 name = "todo-app"
 version = "0.1.0"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 
 [tool.ruff]
-# Python 3.10+ support
-target-version = "py310"
+# Python 3.12+ support
+target-version = "py312"
 line-length = 100
 
 # Exclude from checking
@@ -53,7 +53,7 @@ line-ending = "auto"
 
 [tool.mypy]
 # Strict type checking
-python_version = "3.10"
+python_version = "3.12"
 strict = true
 warn_return_any = true
 warn_unused_configs = true

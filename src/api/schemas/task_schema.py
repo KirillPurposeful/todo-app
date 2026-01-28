@@ -19,5 +19,25 @@ class TaskResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
 class TaskCreate(BaseModel):
     title: str
+    description: str = ""
+    priority: Priority = Priority.LOW
+    deadline: datetime.datetime | None = None
+
+
+class TaskUpdate(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    priority: Priority | None = None
+    deadline: datetime.datetime | None = None
+
+
+class TaskListResponse(BaseModel):
+    tasks: list[TaskResponse]
+    total: int
+
+
+class ErrorResponse(BaseModel):
+    detail: str

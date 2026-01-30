@@ -40,3 +40,5 @@ todo-app-plans/
 .DS_Store
 Thumbs.db
 
+# Coverage reports
+coverage.xml

@@ -8,7 +8,7 @@ from src.api.schemas.task_schema import TaskCreate, TaskListResponse, TaskRespon
 from src.entities.task import Task
 from src.repositories.memory import InMemoryTaskRepository
 
-router = APIRouter(prefix="/api/v1/tasks", tags=["tasks"])
+task_router = APIRouter(prefix="/api/v1/tasks", tags=["tasks"])
 
 
 def to_response(task: Task) -> TaskResponse:
@@ -24,7 +24,7 @@ def get_task_or_404(task_id: UUID, repository: InMemoryTaskRepository) -> Task:
     return task
 
 
-@router.get("/", response_model=TaskListResponse)
+@task_router.get("/", response_model=TaskListResponse)
 async def get_list_tasks(
     repository: Annotated[InMemoryTaskRepository, Depends(get_task_repository)],
 ) -> TaskListResponse:
@@ -34,7 +34,7 @@ async def get_list_tasks(
     return TaskListResponse(tasks=task_responses, total=total)
 
 
-@router.post(
+@task_router.post(
     "/",
     response_model=TaskResponse,
     status_code=status.HTTP_201_CREATED,
@@ -54,7 +54,7 @@ async def create_task(
     return to_response(task)
 
 
-@router.get("/{task_id}", response_model=TaskResponse)
+@task_router.get("/{task_id}", response_model=TaskResponse)
 async def get_task(
     task_id: UUID, repository: Annotated[InMemoryTaskRepository, Depends(get_task_repository)]
 ) -> TaskResponse:
@@ -62,7 +62,7 @@ async def get_task(
     return to_response(task)
 
 
-@router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
+@task_router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_task(
     task_id: UUID, repository: Annotated[InMemoryTaskRepository, Depends(get_task_repository)]
 ) -> None:
@@ -73,7 +73,7 @@ async def delete_task(
         )
 
 
-@router.put("/{task_id}", response_model=TaskResponse)
+@task_router.put("/{task_id}", response_model=TaskResponse)
 async def update_task(
     task_id: UUID,
     data: TaskUpdate,
@@ -92,7 +92,7 @@ async def update_task(
     return to_response(updated_task)
 
 
-@router.post("/{task_id}/complete", response_model=TaskResponse)
+@task_router.post("/{task_id}/complete", response_model=TaskResponse)
 async def complete_task(
     task_id: UUID,
     repository: Annotated[InMemoryTaskRepository, Depends(get_task_repository)],

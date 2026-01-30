@@ -32,7 +32,7 @@ class Task:
 
     @staticmethod
     def _validate_deadline(deadline: datetime.datetime | None) -> None:
-        if deadline is not None and deadline < datetime.datetime.now(datetime.UTC):
+        if deadline is not None and deadline < datetime.datetime.now(datetime.UTC) - datetime.timedelta(minutes=1):
             raise ValidationError("Deadline cannot be in the past")
 
     def _touch(self) -> None:

@@ -24,3 +24,6 @@ class InMemoryTaskRepository(BaseRepository[Task]):
 
     def delete(self, entity_id: UUID) -> bool:
         return self._storage.pop(entity_id, None) is not None
+
+    def clear(self) -> None:
+        self._storage.clear()

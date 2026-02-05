@@ -17,8 +17,12 @@ class Task:
     status: TaskStatus = TaskStatus.NEW
     priority: Priority = Priority.LOW
     deadline: datetime.datetime | None = None
-    created_at: datetime.datetime = field(default_factory=lambda: datetime.datetime.now(datetime.UTC))
-    updated_at: datetime.datetime = field(default_factory=lambda: datetime.datetime.now(datetime.UTC))
+    created_at: datetime.datetime = field(
+        default_factory=lambda: datetime.datetime.now(datetime.UTC)
+    )
+    updated_at: datetime.datetime = field(
+        default_factory=lambda: datetime.datetime.now(datetime.UTC)
+    )
     id: UUID = field(default_factory=uuid4)
 
     def __post_init__(self) -> None:
@@ -32,7 +36,9 @@ class Task:
 
     @staticmethod
     def _validate_deadline(deadline: datetime.datetime | None) -> None:
-        if deadline is not None and deadline < datetime.datetime.now(datetime.UTC) - datetime.timedelta(minutes=1):
+        if deadline is not None and deadline < datetime.datetime.now(
+            datetime.UTC
+        ) - datetime.timedelta(minutes=1):
             raise ValidationError("Deadline cannot be in the past")
 
     def _touch(self) -> None:
@@ -85,7 +91,6 @@ class Task:
 
     def to_dict(self) -> dict:
         data = asdict(self)
-        data['status'] = self.status.value
-        data['priority'] = self.priority.value
+        data["status"] = self.status.value
+        data["priority"] = self.priority.value
         return data
-

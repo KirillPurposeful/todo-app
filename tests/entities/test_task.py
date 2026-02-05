@@ -24,11 +24,7 @@ def future_date():
 
 
 def test_create_task_with_valid_data():
-    task = Task(
-        title="Test Task",
-        description="Test description",
-        priority=Priority.HIGH
-    )
+    task = Task(title="Test Task", description="Test description", priority=Priority.HIGH)
 
     assert task.title == "Test Task"
     assert task.description == "Test description"
@@ -106,7 +102,6 @@ def test_cannot_modify_completed_task_status(sample_task):
         sample_task.mark_in_progress()
 
 
-
 def test_to_dict_returns_correct_structure():
     task = Task(title="Test", description="Desc", priority=Priority.MEDIUM)
 
@@ -119,6 +114,3 @@ def test_to_dict_returns_correct_structure():
     assert "id" in result
     assert "created_at" in result
     assert "updated_at" in result
-
-
-

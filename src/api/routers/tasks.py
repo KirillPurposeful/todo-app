@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from src.api.dependencies import get_task_repository
 from src.api.schemas.task_schema import TaskCreate, TaskListResponse, TaskResponse, TaskUpdate
 from src.entities.task import Task
+from src.exceptions import ValidationError
 from src.repositories.memory import InMemoryTaskRepository
 
 task_router = APIRouter(prefix="/api/v1/tasks", tags=["tasks"])
@@ -43,15 +44,18 @@ async def create_task(
     data: TaskCreate,
     repository: Annotated[InMemoryTaskRepository, Depends(get_task_repository)],
 ) -> TaskResponse:
-    task = repository.save(
-        Task(
-            title=data.title,
-            description=data.description,
-            priority=data.priority,
-            deadline=data.deadline,
+    try:
+        task = repository.save(
+            Task(
+                title=data.title,
+                description=data.description,
+                priority=data.priority,
+                deadline=data.deadline,
+            )
         )
-    )
-    return to_response(task)
+        return to_response(task)
+    except ValidationError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message) from e
 
 
 @task_router.get("/{task_id}", response_model=TaskResponse)
@@ -81,15 +85,17 @@ async def update_task(
 ) -> TaskResponse:
     task = get_task_or_404(task_id, repository)
 
-    task.update(
-        title=data.title,
-        description=data.description,
-        priority=data.priority,
-        deadline=data.deadline,
-    )
-
-    updated_task = repository.save(task)
-    return to_response(updated_task)
+    try:
+        task.update(
+            title=data.title,
+            description=data.description,
+            priority=data.priority,
+            deadline=data.deadline,
+        )
+        updated_task = repository.save(task)
+        return to_response(updated_task)
+    except ValidationError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message) from e
 
 
 @task_router.post("/{task_id}/complete", response_model=TaskResponse)
@@ -98,7 +104,9 @@ async def complete_task(
     repository: Annotated[InMemoryTaskRepository, Depends(get_task_repository)],
 ) -> TaskResponse:
     task = get_task_or_404(task_id, repository)
-    task.mark_completed()
-    updated_task = repository.save(task)
-    return to_response(updated_task)
-
+    try:
+        task.mark_completed()
+        updated_task = repository.save(task)
+        return to_response(updated_task)
+    except ValidationError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message) from e

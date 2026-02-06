@@ -1,10 +1,13 @@
+"""Domain exceptions."""
+
+
 class DomainError(Exception):
-    pass
+    """Base exception for domain errors."""
+
+    def __init__(self, message: str) -> None:
+        self.message = message
+        super().__init__(message)
 
 
 class ValidationError(DomainError):
-    pass
-
-
-class TaskNotFoundError(DomainError):
-    pass
+    """Raised when domain validation fails."""

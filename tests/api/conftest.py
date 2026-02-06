@@ -11,7 +11,6 @@ def client():
     return TestClient(app)
 
 
-
 @pytest.fixture(autouse=True)
 def reset_repo():
     get_task_repository().clear()

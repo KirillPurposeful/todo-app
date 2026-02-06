@@ -1,5 +1,3 @@
-from typing import Iterable
-
 class TaskExpectations:
     # ---- HTTP ----
 
@@ -15,12 +13,6 @@ class TaskExpectations:
     def assert_task_base_fields(self, data: dict) -> None:
         for field in ("id", "title", "status", "created_at", "updated_at"):
             assert field in data, f"Missing field '{field}' in task response. Full response: {data}"
-
-    def assert_task_status(self, data: dict, expected_status: str) -> None:
-        assert "status" in data, f"Missing 'status' field in task response. Full response: {data}"
-        assert data["status"] == expected_status, (
-            f"Expected task status '{expected_status}', got '{data['status']}'. Full response: {data}"
-        )
 
     def assert_task_values(self, data: dict, expected: dict) -> None:
         for key, value in expected.items():
@@ -48,19 +40,13 @@ class TaskExpectations:
 
     # ---- Errors ----
 
-    def assert_validation_error(self, response, expected_status: int = 400) -> None:
-        assert response.status_code == expected_status, (
-            f"Expected validation status {expected_status}, "
-            f"got {response.status_code}. "
-            f"Response body: {response.text}"
-        )
+    def assert_validation_error(self, response) -> None:
+        """Check error response has 'detail' field."""
         body = response.json()
         assert "detail" in body, f"Expected 'detail' in validation error response. Got: {body}"
         assert body["detail"], f"'detail' must not be empty. Full response: {body}"
 
-    def assert_not_found(self, response, expected_status: int = 404) -> None:
-        assert response.status_code == expected_status, (
-            f"Expected HTTP {expected_status} (not found), "
-            f"got {response.status_code}. "
-            f"Response body: {response.text}"
-        )
+    def assert_not_found(self, response) -> None:
+        """Check not found error response has 'detail' field."""
+        body = response.json()
+        assert "detail" in body, f"Expected 'detail' in not found response. Got: {body}"

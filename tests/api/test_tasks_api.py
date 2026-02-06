@@ -6,18 +6,18 @@ from tests.api.expectations import TaskExpectations
 from tests.api.steps import TaskSteps
 from tests.test_data.task_data import (
     EMPTY_TITLE,
-    WHITESPACE_TITLE,
-    PAST_DEADLINE,
-    VALID_TASK_FUTURE_DEADLINE,
-    VALID_TASK_FULL,
+    EXPECTED_TASK_AFTER_ALL_FIELDS_UPDATE,
+    EXPECTED_TASK_AFTER_TITLE_UPDATE,
+    INVALID_ID_STRING,
     MISSING_TITLE,
     NON_EXISTENT_TASK_ID,
-    INVALID_ID_STRING,
-    UPDATE_TITLE_PAYLOAD,
-    EXPECTED_TASK_AFTER_TITLE_UPDATE,
-    VALID_TASK_MINIMAL,
+    PAST_DEADLINE,
     UPDATE_ALL_FIELDS_PAYLOAD,
-    EXPECTED_TASK_AFTER_ALL_FIELDS_UPDATE,
+    UPDATE_TITLE_PAYLOAD,
+    VALID_TASK_FULL,
+    VALID_TASK_FUTURE_DEADLINE,
+    VALID_TASK_MINIMAL,
+    WHITESPACE_TITLE,
 )
 
 
@@ -33,80 +33,80 @@ def expect():
     return TaskExpectations()
 
 
-def test_create_task_with_minimal_valid_data(client, steps, expect):
-    # When
+def test_create_task_with_minimal_data_returns_201(client, steps, expect):
+    # When: creating task with minimal data
     response = steps.create_task(client, payload=VALID_TASK_MINIMAL)
 
-    # Then
+    # Then: task created successfully
     expect.assert_status_code(response, expected=201)
     task_data = response.json()
     expect.assert_task_base_fields(task_data)
     expect.assert_task_values(task_data, VALID_TASK_MINIMAL)
 
 
-def test_create_task_with_full_valid_data(client, steps, expect):
-    # When
+def test_create_task_with_full_data_returns_201(client, steps, expect):
+    # When: creating task with full data
     response = steps.create_task(client, payload=VALID_TASK_FULL)
 
-    # Then
+    # Then: task created successfully
     expect.assert_status_code(response, expected=201)
     task_data = response.json()
     expect.assert_task_base_fields(task_data)
     expect.assert_task_values(task_data, VALID_TASK_FULL)
 
 
-def test_create_task_with_empty_title(client, steps, expect):
-    # When
+def test_create_task_with_empty_title_returns_400(client, steps, expect):
+    # When: creating task with empty title
     response = steps.create_task(client, payload=EMPTY_TITLE)
 
-    # Then
+    # Then: validation error returned
     expect.assert_status_code(response, expected=400)
-    expect.assert_validation_error(response, expected_status=400)
+    expect.assert_validation_error(response)
 
 
-def test_create_task_with_whitespace_title(client, steps, expect):
-    # When
+def test_create_task_with_whitespace_title_returns_400(client, steps, expect):
+    # When: creating task with whitespace title
     response = steps.create_task(client, payload=WHITESPACE_TITLE)
 
-    # Then
+    # Then: validation error returned
     expect.assert_status_code(response, expected=400)
-    expect.assert_validation_error(response, expected_status=400)
+    expect.assert_validation_error(response)
 
 
-def test_create_task_with_past_deadline(client, steps, expect):
-    # When
+def test_create_task_with_past_deadline_returns_400(client, steps, expect):
+    # When: creating task with past deadline
     response = steps.create_task(client, payload=PAST_DEADLINE)
 
-    # Then
+    # Then: validation error returned
     expect.assert_status_code(response, expected=400)
-    expect.assert_validation_error(response, expected_status=400)
+    expect.assert_validation_error(response)
 
 
-def test_create_task_with_future_deadline(client, steps, expect):
-    # When
+def test_create_task_with_future_deadline_returns_201(client, steps, expect):
+    # When: creating task with future deadline
     response = steps.create_task(client, payload=VALID_TASK_FUTURE_DEADLINE)
 
-    # Then
+    # Then: task created successfully
     expect.assert_status_code(response, expected=201)
     task_data = response.json()
     expect.assert_task_base_fields(task_data)
     expect.assert_task_values(task_data, VALID_TASK_FUTURE_DEADLINE)
 
 
-def test_create_task_without_title(client, steps, expect):
-    # When
+def test_create_task_without_title_returns_422(client, steps, expect):
+    # When: creating task without title field
     response = steps.create_task(client, payload=MISSING_TITLE)
 
-    # Then
+    # Then: pydantic validation error returned
     expect.assert_status_code(response, expected=422)
-    expect.assert_validation_error(response, expected_status=422)
+    expect.assert_validation_error(response)
 
 
 # GET
 # -------------------------------------------------------------------------------------------------------------
 
 
-def test_get_task_by_id_success(client, steps, expect):
+def test_get_task_by_existing_id_returns_200(client, steps, expect):
     # Given: task is created
     create_task_response = steps.create_task(client, payload=VALID_TASK_MINIMAL)
     task_id = create_task_response.json()["id"]
@@ -122,22 +122,24 @@ def test_get_task_by_id_success(client, steps, expect):
     expect.assert_task_values(returned_task_data, VALID_TASK_MINIMAL)
 
 
-def test_get_task_by_id_not_found(client, steps, expect):
-    # When: task is requested by incorrect id
+def test_get_task_by_non_existent_id_returns_404(client, steps, expect):
+
+    # When: task is requested by non-existent id
     get_task_response = steps.get_task(client, NON_EXISTENT_TASK_ID)
 
     # Then: 404 not found error returned
     expect.assert_status_code(get_task_response, expected=404)
-    expect.assert_not_found(get_task_response, expected_status=404)
+    expect.assert_not_found(get_task_response)
 
 
-def test_get_task_by_invalid_uuid(client, steps, expect):
+def test_get_task_by_invalid_uuid_returns_422(client, steps, expect):
+
     # When: task is requested by invalid id format
     get_task_response = steps.get_task(client, INVALID_ID_STRING)
 
     # Then: 422 validation error returned
     expect.assert_status_code(get_task_response, expected=422)
-    expect.assert_validation_error(get_task_response, expected_status=422)
+    expect.assert_validation_error(get_task_response)
 
 
 # GET ALL
@@ -145,8 +147,6 @@ def test_get_task_by_invalid_uuid(client, steps, expect):
 
 
 def test_get_all_tasks_returns_empty_list(client, steps, expect):
-    # Given: no tasks created
-
     # When: all tasks are requested
     get_all_response = steps.list_tasks(client)
     # Then: empty list is returned
@@ -183,7 +183,7 @@ def test_get_all_tasks_returns_multiple_tasks(client, steps, expect):
 # -------------------------------------------------------------------------------------------------------------
 
 
-def test_update_task_single_field(client, steps, expect):
+def test_update_task_single_field_returns_200(client, steps, expect):
     # Given: task created
     create_task_response = steps.create_task(client, payload=VALID_TASK_MINIMAL)
     task_id = create_task_response.json()["id"]
@@ -197,7 +197,7 @@ def test_update_task_single_field(client, steps, expect):
     expect.assert_task_values(update_response.json(), EXPECTED_TASK_AFTER_TITLE_UPDATE)
 
 
-def test_update_task_multiple_fields(client, steps, expect):
+def test_update_task_multiple_fields_returns_200(client, steps, expect):
     # Given: task created
     create_task_response = steps.create_task(client, payload=VALID_TASK_MINIMAL)
     task_id = create_task_response.json()["id"]
@@ -211,25 +211,26 @@ def test_update_task_multiple_fields(client, steps, expect):
     expect.assert_task_values(update_response.json(), EXPECTED_TASK_AFTER_ALL_FIELDS_UPDATE)
 
 
-def test_update_task_invalid_uuid(client, steps, expect):
-    # When: task updated with invalid id
+
+def test_update_task_with_invalid_uuid_returns_422(client, steps, expect):
+    # When: updating task with invalid UUID
     update_response = steps.update_task(client, INVALID_ID_STRING, payload=UPDATE_TITLE_PAYLOAD)
 
     # Then: validation error returned
     expect.assert_status_code(update_response, expected=422)
-    expect.assert_validation_error(update_response, expected_status=422)
+    expect.assert_validation_error(update_response)
 
 
-def test_update_task_not_found(client, steps, expect):
-    # When: task is updated with a non-existent id
+def test_update_task_with_non_existent_id_returns_404(client, steps, expect):
+    # When: updating task with non-existent id
     update_response = steps.update_task(client, NON_EXISTENT_TASK_ID, payload=UPDATE_TITLE_PAYLOAD)
 
     # Then: not found error returned
     expect.assert_status_code(update_response, expected=404)
-    expect.assert_not_found(update_response, expected_status=404)
+    expect.assert_not_found(update_response)
 
 
-def test_delete_task_success(client, steps, expect):
+def test_delete_existing_task_returns_204(client, steps, expect):
     # Given: task created
     create_task_response = steps.create_task(client, payload=VALID_TASK_MINIMAL)
     task_id = create_task_response.json()["id"]
@@ -241,30 +242,32 @@ def test_delete_task_success(client, steps, expect):
     expect.assert_status_code(delete_response, expected=204)
 
     get_task_response = steps.get_task(client, task_id)
-    expect.assert_not_found(get_task_response, expected_status=404)
+    expect.assert_status_code(get_task_response, expected=404)
+    expect.assert_not_found(get_task_response)
 
 
-def test_delete_task_not_found(client, steps, expect):
+def test_delete_task_with_non_existent_id_returns_404(client, steps, expect):
     # When: deleting a non-existent task
     delete_response = steps.delete_task(client, NON_EXISTENT_TASK_ID)
 
     # Then: not found error is returned
     expect.assert_status_code(delete_response, expected=404)
-    expect.assert_not_found(delete_response, expected_status=404)
+    expect.assert_not_found(delete_response)
 
 
-def test_delete_task_with_invalid_uuid(client, steps, expect):
+def test_delete_task_with_invalid_uuid_returns_422(client, steps, expect):
+
     # When: deleting a task with invalid id format
     delete_response = steps.delete_task(client, INVALID_ID_STRING)
 
     # Then: validation error is returned
     expect.assert_status_code(delete_response, expected=422)
-    expect.assert_validation_error(delete_response, expected_status=422)
+    expect.assert_validation_error(delete_response)
 
 
 # CHANGE TASK STATUS
-#-------------------------------------------------------------------------------------------------------------
-def test_complete_task_success(client, steps, expect):
+# -------------------------------------------------------------------------------------------------------------
+def test_complete_existing_task_returns_200(client, steps, expect):
     # Given: task created
     create_task_response = steps.create_task(client, payload=VALID_TASK_MINIMAL)
     task_id = create_task_response.json()["id"]
@@ -277,24 +280,26 @@ def test_complete_task_success(client, steps, expect):
     expect.assert_task_base_fields(complete_response.json())
     expect.assert_task_values(complete_response.json(), {"status": "completed"})
 
-def test_complete_task_not_found(client, steps, expect):
-    # When: completing not-existing task
+
+def test_complete_task_with_non_existent_id_returns_404(client, steps, expect):
+    # When: completing task with non-existent id
     complete_response = steps.complete_task(client, NON_EXISTENT_TASK_ID)
 
     # Then: not found error is returned
     expect.assert_status_code(complete_response, expected=404)
-    expect.assert_not_found(complete_response, expected_status=404)
+    expect.assert_not_found(complete_response)
 
-def test_complete_task_with_invalid_uuid(client, steps, expect):
 
-    # When: completing a task with invalid id format
+def test_complete_task_with_invalid_uuid_returns_422(client, steps, expect):
+    # When: completing task with invalid UUID
     complete_response = steps.complete_task(client, INVALID_ID_STRING)
 
     # Then: validation error is returned
     expect.assert_status_code(complete_response, expected=422)
-    expect.assert_validation_error(complete_response, expected_status=422)
+    expect.assert_validation_error(complete_response)
 
-def test_complete_task_is_idempotent(client, steps, expect):
+
+def test_complete_already_completed_task_returns_200(client, steps, expect):
     # Given: task is created and completed
     create_task_response = steps.create_task(client, payload=VALID_TASK_MINIMAL)
     task_id = create_task_response.json()["id"]
